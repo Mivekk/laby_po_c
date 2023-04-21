@@ -1,0 +1,3 @@
+﻿  World.cpp
+C:\Dev\szkola\laby_p_c\laby_p_c\World.cpp(21,18): warning C4244: "inicjowanie": konwersja z "__int64" do "int", możliwa utrata danych
+  laby_p_c.vcxproj -> C:\Dev\szkola\laby_p_c\x64\Debug\laby_p_c.exe
