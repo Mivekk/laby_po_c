@@ -95,7 +95,8 @@ void Animal::breed(Animal* animal)
 			if (newAnimal == nullptr) {
 				throw("Unknown animal");
 			}
-			world->organisms.push_back(newAnimal);
+
+			world->addOrganism(newAnimal);
 		}
 		catch (const std::string& exception) {
 			console.write(30, 10);
@@ -113,11 +114,13 @@ void Animal::fight(Organism* organism)
 	if (strength > organism->getStrength()) {
 		world->board[pos.second][pos.first] = nullptr;
 		world->board[organism->getPos().second][organism->getPos().first] = this;
+
 		world->removeOrganism(organism);
 	}
 	else if (strength < organism->getStrength()) {
 		world->board[organism->getPos().second][organism->getPos().first] = nullptr;
 		world->board[pos.second][pos.first] = organism;
+
 		world->removeOrganism(this);
 	}
 	else {

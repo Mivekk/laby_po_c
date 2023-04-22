@@ -18,7 +18,9 @@ public:
 	std::vector<Organism*> organisms;
 	std::vector<std::vector<Organism*>> board;
 
+	void addOrganism(Organism* organism);
 	void removeOrganism(Organism* organism);
+	void replaceOrganism(Organism* from, Organism* to);
 private:
 	Console console;
 

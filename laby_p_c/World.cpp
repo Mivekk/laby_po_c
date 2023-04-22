@@ -15,31 +15,38 @@ World::~World()
 {
 }
 
+void World::addOrganism(Organism* organism)
+{
+	organisms.push_back(organism);
+
+	organismsSize++;
+}
+
 void World::removeOrganism(Organism* organism)
 {
 	auto it = std::find(organisms.begin(), organisms.end(), organism);
 	int organismIdx = it - organisms.begin();
 	if (organismIdx >= 0 && organismIdx < organismsSize) {
-		try {
-			delete organisms[organismIdx];
-			organisms[organismIdx] = nullptr;
-			organisms.erase(it);
+		delete organisms[organismIdx];
+		organisms[organismIdx] = nullptr;
+		organisms.erase(it);
 
-			organismsSize--;
-		}
-		catch (const std::string& exception) {
-			console.write(25, 20);
-			std::cout << exception << "\n";
-		}
+		organismsSize--;
 	}
+}
+
+void World::replaceOrganism(Organism* from, Organism* to)
+{
+	to = from;
+	from = nullptr;
 }
 
 void World::init()
 {
 	organisms.push_back(new Wolf(this, { 1, 1 }));
 	organisms.push_back(new Wolf(this, { 2, 2 }));
-	organisms.push_back(new Sheep(this, { 18, 18 }));
-	organisms.push_back(new Sheep(this, { 17, 17 }));
+	organisms.push_back(new Sheep(this, { 3, 3 }));
+	organisms.push_back(new Sheep(this, { 4, 4 }));
 
 	console.textColor(WHITE);
 	console.backgroundColor(BLACK);
@@ -75,7 +82,10 @@ void World::update()
 
 	for (int i = 0; i < organismsSize; i++) {
 		organisms[i]->update();
+		console.write(35, 20);
 	}
+
+	std::cout << organismsSize;
 }
 
 void World::draw()
