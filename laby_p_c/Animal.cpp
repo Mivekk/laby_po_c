@@ -1,6 +1,9 @@
 #include "Animal.h"
 #include "animals/Wolf.h"
 #include "animals/Sheep.h"
+#include "animals/Fox.h"
+#include "animals/Turtle.h"
+#include "animals/Antelope.h"
 
 Animal::Animal(World* world, std::pair<int, int> pos)
 	: Organism(world), skipMove(false), didMove(false)
@@ -27,34 +30,14 @@ void Animal::update()
 	}
 
 	// move animal
-	std::pair<int, int> directions[] = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
-
-	std::pair<int, int> randomDirection = directions[rand() % 4];
-
-	std::pair<int, int> afterPos = { this->pos.first + randomDirection.first, this->pos.second + randomDirection.second };
-
-	if (afterPos.first >= world->board[0].size() ||
-		afterPos.first < 0) {
-
-		afterPos.first = this->pos.first - randomDirection.first;
-	}
-	else if (afterPos.second >= world->board.size() ||
-		afterPos.second < 0) {
-
-		afterPos.second = this->pos.second - randomDirection.second;
-	}
+	std::pair<int, int> afterPos = getNextPos();
 
 	// space is occupied -> collision
-	if (world->board[afterPos.second][afterPos.first]) {
+	if (world->board[afterPos.second][afterPos.first] && pos != afterPos) {
 		handleCollision(world->board[afterPos.second][afterPos.first]);
 	}
 	else {
-		world->board[pos.second][pos.first] = nullptr;
-
-		this->pos.first = afterPos.first;
-		this->pos.second = afterPos.second;
-
-		world->board[pos.second][pos.first] = this;
+		move(afterPos);
 	}
 
 	didMove = true;
@@ -66,40 +49,75 @@ void Animal::handleCollision(Organism* other)
 	if (typeid(*this) == typeid(*other)) {
 		breed((Animal*)other);
 	}
-	else {
+	else if (dynamic_cast<Animal*>(other)) {
 		fight(other);
+	}
+	else if (other != nullptr) {
+		std::pair<int, int> afterPos = { other->getPos().first, other->getPos().second };
+
+		other->handleCollision(this);
+
+		if (pos.first >= 0) {
+			move(afterPos);
+		}
 	}
 }
 
-void Animal::draw()
+bool Animal::bounceAttack(Organism* organism)
 {
-	console.backgroundColor(RED);
-	std::cout << ".";
+	return false;
+}
+
+bool Animal::escaped()
+{
+	return false;
 }
 
 void Animal::breed(Animal* animal)
 {
-	std::pair<int, int> newPos = findFreeSpace(pos, animal->getPos());
+	std::pair<int, int> newPos = findFreeSpace(pos);
+	if (newPos.first == -1) {
+		newPos = findFreeSpace(animal->getPos());
+	}
 
 	if (newPos.first != -1) {
 		Animal* newAnimal = nullptr;
+		std::string log;
 
 		if (typeid(*this) == typeid(Wolf)) {
+			log = "Wolf";
 			newAnimal = new Wolf(world, newPos);
 		}
 		else if (typeid(*this) == typeid(Sheep)) {
+			log = "Sheep";
 			newAnimal = new Sheep(world, newPos);
 		}
+		else if (typeid(*this) == typeid(Fox)) {
+			log = "Fox";
+			newAnimal = new Fox(world, newPos);
+		}
+		else if (typeid(*this) == typeid(Turtle)) {
+			log = "Turtle";
+			newAnimal = new Turtle(world, newPos);
+		}
+		else if (typeid(*this) == typeid(Antelope)) {
+			log = "Antelope";
+			newAnimal = new Antelope(world, newPos);
+		}
+
+		log = log + " spawns at X: " + std::to_string(newPos.first)
+			+ ", Y: " + std::to_string(newPos.second);
 
 		try {
 			if (newAnimal == nullptr) {
 				throw("Unknown animal");
 			}
 
+			world->console->addLog(log);
 			world->addOrganism(newAnimal);
 		}
 		catch (const std::string& exception) {
-			console.write(30, 10);
+			world->console->setup(30, 10);
 			std::cerr << exception;
 		}
 	}
@@ -111,59 +129,53 @@ void Animal::breed(Animal* animal)
 
 void Animal::fight(Organism* organism)
 {
-	if (strength > organism->getStrength()) {
-		world->board[pos.second][pos.first] = nullptr;
-		world->board[organism->getPos().second][organism->getPos().first] = this;
+	std::string log;
+	if (organism->bounceAttack(this)) {
+		log = organism->getType() + " bounces attack from " + getType();
+	}
+	else if (strength >= organism->getStrength()) {
+		std::pair<int, int> afterPos = { organism->getPos().first, organism->getPos().second };
 
+
+		if (organism->escaped()) {
+			if (organism != nullptr && organism->getPos().first > 0) {
+				log = organism->getType() + " escapes from " + getType();
+
+				world->console->addLog(log);
+			}
+
+			move(afterPos);
+			return;
+		}
+
+		log = getType() + " eats " + organism->getType() + " at X: " + 
+			std::to_string(afterPos.first) + ", Y: " + std::to_string(afterPos.second);
+ 
+		world->console->addLog(log);
+
+		world->board[afterPos.second][afterPos.first] = nullptr;
 		world->removeOrganism(organism);
+
+		move(afterPos);
 	}
 	else if (strength < organism->getStrength()) {
-		world->board[organism->getPos().second][organism->getPos().first] = nullptr;
-		world->board[pos.second][pos.first] = organism;
+		log = organism->getType() + " eats " + getType() + " at X: " +
+			std::to_string(pos.first) + ", Y: " + std::to_string(pos.second);
 
+		world->console->addLog(log);
+
+		world->board[pos.second][pos.first] = nullptr;
 		world->removeOrganism(this);
 	}
-	else {
-
-	}
 }
 
-std::pair<int, int> Animal::findFreeSpace(std::pair<int, int> pos1, std::pair<int, int> pos2)
+void Animal::move(std::pair<int, int> dest)
 {
-	std::pair<int, int> directions[] = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+	world->board[pos.second][pos.first] = nullptr;
 
-	std::pair<int, int> freePos = { -1, -1 };
-	for (const auto& dir : directions) {
-		std::pair<int, int> afterPos = { pos1.first + dir.first, pos1.second + dir.second };
+	pos.first = dest.first;
+	pos.second = dest.second;
 
-		if (afterPos.first >= world->board[0].size() ||
-			afterPos.first < 0 || afterPos.second < 0 ||
-			afterPos.second >= world->board.size()) {
-
-			continue;
-		}
-
-		Organism* space = world->board[afterPos.second][afterPos.first];
-		if (space == nullptr) {
-			freePos = { afterPos.first, afterPos.second };
-			break;
-		}
-
-		afterPos = { pos2.first + dir.first, pos2.second + dir.second };
-
-		if (afterPos.first >= world->board[0].size() ||
-			afterPos.first < 0 || afterPos.second < 0 ||
-			afterPos.second >= world->board.size()) {
-
-			continue;
-		}
-
-		space = world->board[afterPos.second][afterPos.first];
-		if (space == nullptr) {
-			freePos = { afterPos.first, afterPos.second };
-			break;
-		}
-	}
-
-	return freePos;
+	world->board[pos.second][pos.first] = this;
 }
+

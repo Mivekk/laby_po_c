@@ -128,19 +128,39 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Animal.cpp" />
+    <ClCompile Include="animals\Antelope.cpp" />
+    <ClCompile Include="plants\Belladonna.cpp" />
     <ClCompile Include="Console.cpp" />
+    <ClCompile Include="animals\Human.cpp" />
+    <ClCompile Include="animals\Fox.cpp" />
+    <ClCompile Include="plants\Guarana.cpp" />
+    <ClCompile Include="plants\Dandelion.cpp" />
+    <ClCompile Include="plants\Grass.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Organism.cpp" />
     <ClCompile Include="animals\Wolf.cpp" />
     <ClCompile Include="animals\Sheep.cpp" />
+    <ClCompile Include="animals\Turtle.cpp" />
+    <ClCompile Include="Plant.cpp" />
+    <ClCompile Include="plants\Sosnowsky.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animal.h" />
+    <ClInclude Include="animals\Antelope.h" />
+    <ClInclude Include="plants\Belladonna.h" />
     <ClInclude Include="Console.h" />
+    <ClInclude Include="animals\Human.h" />
+    <ClInclude Include="animals\Fox.h" />
+    <ClInclude Include="plants\Guarana.h" />
+    <ClInclude Include="plants\Dandelion.h" />
+    <ClInclude Include="plants\Grass.h" />
     <ClInclude Include="Organism.h" />
     <ClInclude Include="animals\Wolf.h" />
     <ClInclude Include="animals\Sheep.h" />
+    <ClInclude Include="animals\Turtle.h" />
+    <ClInclude Include="Plant.h" />
+    <ClInclude Include="plants\Sosnowsky.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

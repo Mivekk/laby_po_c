@@ -13,6 +13,11 @@ Wolf::~Wolf()
 
 void Wolf::draw()
 {
-	console.backgroundColor(DARKGRAY);
+	world->console->backgroundColor(DARKGRAY);
 	std::cout << "W";
+}
+
+std::string Wolf::getType() const
+{
+	return "Wolf";
 }

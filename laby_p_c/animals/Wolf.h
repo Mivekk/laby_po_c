@@ -9,5 +9,7 @@ public:
 
 private:
 	void draw() override;
+
+	std::string getType() const override;
 };
 

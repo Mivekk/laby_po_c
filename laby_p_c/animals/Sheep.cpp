@@ -13,6 +13,11 @@ Sheep::~Sheep()
 
 void Sheep::draw()
 {
-	console.backgroundColor(LIGHTGRAY);
+	world->console->backgroundColor(LIGHTGRAY);
 	std::cout << "S";
+}
+
+std::string Sheep::getType() const
+{
+	return "Sheep";
 }

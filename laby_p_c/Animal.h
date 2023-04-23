@@ -10,15 +10,20 @@ public:
 protected:
 	virtual void update() override;
 	virtual void handleCollision(Organism* other) override;
-	virtual void draw() override;
+	virtual void draw() = 0;
+
+	virtual bool bounceAttack(Organism* organism) override;
+	virtual bool escaped() override;
+
+	virtual std::string getType() const = 0;
+
+	void move(std::pair<int, int> dest);
+private:
 
 	void breed(Animal* animal);
 	void fight(Organism* organism);
 
-private:
 	bool skipMove;
 	bool didMove;
-
-	std::pair<int, int> findFreeSpace(std::pair<int, int> pos1, std::pair<int, int> pos2);
 };
 
