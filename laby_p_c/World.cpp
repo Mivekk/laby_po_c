@@ -56,56 +56,7 @@ void World::removeOrganism(Organism* organism)
 
 void World::init()
 {
-	std::pair<int, int> randomPos = { rand() % worldSize.first, rand() % worldSize.second };
-
-	randomPosition(randomPos);
-	organisms.push_back(new Wolf(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Wolf(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Sheep(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Sheep(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Fox(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Fox(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Turtle(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Turtle(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Antelope(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Antelope(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Grass(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Guarana(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Belladonna(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Sosnowsky(this, randomPos));
-
-	randomPosition(randomPos);
-	organisms.push_back(new Dandelion(this, randomPos));
-
-	randomPosition(randomPos);
-	human = new Human(this, randomPos);
-	organisms.push_back(human);
+	generateOrganisms();
 
 	console->textColor(WHITE);
 	console->backgroundColor(BLACK);
@@ -118,7 +69,9 @@ void World::run()
 {
 	draw();
 	while (true) {
-		readInput();
+		if (readInput()) {
+			continue;
+		}
 
 		update();
 
@@ -126,7 +79,7 @@ void World::run()
 	}
 }
 
-void World::readInput()
+bool World::readInput()
 {
 	int input = _getch();
 	if (input == ARROW) {
@@ -134,17 +87,27 @@ void World::readInput()
 		if (human != nullptr) {
 			human->setNextMove(input);
 		}
+
+		return false;
 	}
 	else if ((char)input == 'p' && human != nullptr && !human->abilityActivated && human->abilityCooldown < 0) {
 		human->abilityActivated = true;
 		human->abilityDuration = ABILITY_DURATION;
+
+		return true;
 	}
 	else if ((char)input == 's') {
 		save();
+
+		return true;
 	}
 	else if ((char)input == 'l') {
 		load();
+
+		return false;
 	}
+
+	return false;
 }
 
 void World::update()
@@ -166,7 +129,7 @@ void World::update()
 	}
 
 	if (human != nullptr) {
-		if (human->abilityDuration == -1 && human->abilityActivated) {
+		if (human->abilityDuration == 0 && human->abilityActivated) {
 			human->abilityActivated = false;
 			human->abilityCooldown = ABILITY_COOLDOWN;
 		}
@@ -176,17 +139,25 @@ void World::update()
 		}
 	}
 
-	console->setup(25, 28);
-	std::cout << organismsSize;
-
 	console->displayLogs();
 }
 
 void World::draw()
 {
+	console->gotoxy(2, 0);
+	console->textColor(WHITE);
+	std::cout << "Lukasz Machutt 193517";
+
+	console->gotoxy(25, 0);
+	if (human && human->abilityActivated) {		
+		std::cout << "Ability activated";
+	}
+	else {
+		std::cout << "                   ";
+	}
+
 	int startY = 1;
 	console->gotoxy(2, startY);
-	console->textColor(WHITE);
 
 	for (int i = 0; i < worldSize.second; i++) {
 		for (int j = 0; j < worldSize.first; j++) {
@@ -202,6 +173,33 @@ void World::draw()
 		}
 		console->gotoxy(2, startY + i + 1);
 	}
+
+	drawLegend();
+}
+
+void World::drawLegend()
+{
+	console->gotoxy(50, 20);
+	drawOrganismLegend(LIGHTCYAN, "Antelope");
+	drawOrganismLegend(BROWN, "Fox");
+	drawOrganismLegend(BLACK, "Human");
+	drawOrganismLegend(LIGHTGRAY, "Sheep");
+	drawOrganismLegend(GREEN, "Turtle");
+	drawOrganismLegend(DARKGRAY, "Wolf");
+	console->gotoxy(50, 21);
+	drawOrganismLegend(RED, "Belladonna");
+	drawOrganismLegend(YELLOW, "Dandelion");
+	drawOrganismLegend(LIGHTGREEN, "Grass");
+	drawOrganismLegend(LIGHTBLUE, "Guarana");
+	drawOrganismLegend(LIGHTRED, "Sosnowsky");
+}
+
+void World::drawOrganismLegend(int color, const std::string& name)
+{
+	console->backgroundColor(color);
+	std::cout << name[0] << " ";
+	console->backgroundColor(BLACK);
+	std::cout << " " << name << " ";
 }
 
 void World::save()
@@ -236,8 +234,8 @@ void World::load()
 	file >> oSize >> organismsSize;
 
 	std::vector<Organism*> newOrganisms;
-
 	std::vector<std::vector<Organism*>> newBoard(worldSize.second, std::vector<Organism*>(worldSize.first, nullptr));
+
 	board = newBoard;
 
 	for (int i = 0; i < oSize; i++) {
@@ -262,6 +260,7 @@ void World::load()
 		else if (tmpType == "Human") {
 			human = new Human(this, tmpPos);
 			newOrganisms.push_back(human);
+
 			file >> human->abilityActivated >> human->abilityCooldown >> human->abilityDuration;
 		}
 		else if (tmpType == "Wolf") {
@@ -289,6 +288,65 @@ void World::load()
 	organisms = newOrganisms;
 
 	file.close();
+}
+
+void World::generateOrganisms()
+{
+	std::pair<int, int> randomPos = { rand() % worldSize.first, rand() % worldSize.second };
+
+	for (int i = 0; i < rand() % (MAX_ORGANISMS - MIN_ORGANISMS + 1) + MIN_ORGANISMS; i++) {
+		randomPosition(randomPos);
+		organisms.push_back(new Wolf(this, randomPos));
+	}
+
+	for (int i = 0; i < rand() % (MAX_ORGANISMS - MIN_ORGANISMS + 1) + MIN_ORGANISMS; i++) {
+		randomPosition(randomPos);
+		organisms.push_back(new Sheep(this, randomPos));
+	}
+
+	for (int i = 0; i < rand() % (MAX_ORGANISMS - MIN_ORGANISMS + 1) + MIN_ORGANISMS; i++) {
+		randomPosition(randomPos);
+		organisms.push_back(new Fox(this, randomPos));
+	}
+
+	for (int i = 0; i < rand() % (MAX_ORGANISMS - MIN_ORGANISMS + 1) + MIN_ORGANISMS; i++) {
+		randomPosition(randomPos);
+		organisms.push_back(new Turtle(this, randomPos));
+	}
+
+	for (int i = 0; i < rand() % (MAX_ORGANISMS - MIN_ORGANISMS + 1) + MIN_ORGANISMS; i++) {
+		randomPosition(randomPos);
+		organisms.push_back(new Antelope(this, randomPos));
+	}
+
+	for (int i = 0; i < rand() % (MAX_ORGANISMS - MIN_ORGANISMS + 1) + MIN_ORGANISMS; i++) {
+		randomPosition(randomPos);
+		organisms.push_back(new Grass(this, randomPos));
+	}
+
+	for (int i = 0; i < rand() % (MAX_ORGANISMS - MIN_ORGANISMS + 1) + MIN_ORGANISMS; i++) {
+		randomPosition(randomPos);
+		organisms.push_back(new Guarana(this, randomPos));
+	}
+
+	for (int i = 0; i < rand() % (MAX_ORGANISMS - MIN_ORGANISMS + 1) + MIN_ORGANISMS; i++) {
+		randomPosition(randomPos);
+		organisms.push_back(new Belladonna(this, randomPos));
+	}
+
+	for (int i = 0; i < rand() % (MAX_ORGANISMS - MIN_ORGANISMS + 1) + MIN_ORGANISMS; i++) {
+		randomPosition(randomPos);
+		organisms.push_back(new Sosnowsky(this, randomPos));
+	}
+
+	for (int i = 0; i < rand() % (MAX_ORGANISMS - MIN_ORGANISMS + 1) + MIN_ORGANISMS; i++) {
+		randomPosition(randomPos);
+		organisms.push_back(new Dandelion(this, randomPos));
+	}
+
+	randomPosition(randomPos);
+	human = new Human(this, randomPos);
+	organisms.push_back(human);
 }
 
 void World::randomPosition(std::pair<int, int>& randomPos)

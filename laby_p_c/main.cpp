@@ -3,7 +3,11 @@
 int main() {
 	srand((unsigned int)time(NULL));
 
-	World world({ 20, 20 });
+	std::cout << "Podaj rozmiar planszy: \n";
+	int sizeX, sizeY;
+	std::cin >> sizeX >> sizeY;
+
+	World world({ sizeX, sizeY });
 
 	return 0;
 }

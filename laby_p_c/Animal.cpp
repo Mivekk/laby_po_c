@@ -136,7 +136,6 @@ void Animal::fight(Organism* organism)
 	else if (strength >= organism->getStrength()) {
 		std::pair<int, int> afterPos = { organism->getPos().first, organism->getPos().second };
 
-
 		if (organism->escaped()) {
 			if (organism != nullptr && organism->getPos().first > 0) {
 				log = organism->getType() + " escapes from " + getType();

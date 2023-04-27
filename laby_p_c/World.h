@@ -10,8 +10,8 @@
 #define ABILITY_COOLDOWN 5
 #define ABILITY_DURATION 5
 
-#define MIN_ORGANISMS 1
-#define MAX_ORGANISMS 3
+#define MIN_ORGANISMS 2
+#define MAX_ORGANISMS 4
 
 class Organism;
 class Human;
@@ -34,13 +34,18 @@ private:
 
 	void init();
 	void run();
-	void readInput();
+
+	bool readInput();
 	void update();
+
 	void draw();
+	void drawLegend();
+	void drawOrganismLegend(int color, const std::string& name);
 
 	void save();
 	void load();
 
+	void generateOrganisms();
 	void randomPosition(std::pair<int, int>& randomPos);
 
 	std::pair<int, int> worldSize;

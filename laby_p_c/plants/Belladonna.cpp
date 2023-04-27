@@ -14,6 +14,9 @@ void Belladonna::handleCollision(Organism* other)
 {
 	world->board[other->getPos().second][other->getPos().first] = nullptr;
 	world->removeOrganism(other);
+
+	world->board[pos.second][pos.first] = nullptr;
+	world->removeOrganism(this);
 }
 
 void Belladonna::draw()

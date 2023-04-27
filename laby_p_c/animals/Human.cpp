@@ -77,7 +77,7 @@ std::string Human::getType() const
 
 bool Human::useAbility()
 {
-	if (abilityDuration >= 0) {
+	if (abilityDuration > 0) {
 		if (abilityDuration < 2) {
 			if (rand() % 2) {
 				return true;
